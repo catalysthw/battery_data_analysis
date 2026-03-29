@@ -9,9 +9,8 @@ import matplotlib.pyplot as plt
 import xgboost as xgb
 import gshap
 
-# =========================================================
+
 # [Step 0] Feature / Target 준비
-# =========================================================
 target_variable = 'target_RUL'
 
 
@@ -26,9 +25,8 @@ y_test_model = test_df.loc[X_test_model.index, target_variable].copy()
 print("X_train shape:", X_train_model.shape)
 print("X_test shape :", X_test_model.shape)
 
-# =========================================================
+
 # [Step 1] XGBRegressor 학습
-# =========================================================
 xgb_model = xgb.XGBRegressor(
     n_estimators=300,
     max_depth=6,
@@ -50,17 +48,15 @@ xgb_model.fit(
 
 print("Model training completed.")
 
-# =========================================================
+
 # [Step 2] 예측 함수 정의
-# =========================================================
 def f(x):
     x_df = pd.DataFrame(x, columns=feature_cols)
     return xgb_model.predict(x_df)   # 1D vector
 
-# =========================================================
+
 # [Step 3] generalized function g 정의
 # "낮은 predicted life ratio 비율"의 평균 -> scalar
-# =========================================================
 threshold = np.percentile(y_train_model, 25)
 print("Low life-ratio threshold:", threshold)
 
@@ -68,15 +64,13 @@ def g(y_pred):
     y_pred = np.asarray(y_pred).reshape(-1)
     return np.mean(y_pred < threshold)   # scalar
 
-# =========================================================
+
 # [Step 4] Background / Evaluation data
-# =========================================================
 background = X_train_model.sample(min(200, len(X_train_model)), random_state=42)
 X_eval = X_test_model.iloc[:50].copy()
 
-# =========================================================
+
 # [Step 5] G-SHAP 계산
-# =========================================================
 explainer = gshap.KernelExplainer(
     model=f,
     data=background.values,
@@ -95,9 +89,8 @@ g_shap_values = np.asarray(g_shap_values).squeeze()
 
 print("after squeeze:", g_shap_values.shape)
 
-# =========================================================
+
 # [Step 6] 결과 정리
-# =========================================================
 gshap_df = pd.DataFrame({
     "feature": feature_cols,
     "g_shap_value": g_shap_values
@@ -105,9 +98,8 @@ gshap_df = pd.DataFrame({
 
 print(gshap_df)
 
-# =========================================================
+
 # [Step 7] 시각화
-# =========================================================
 plt.figure(figsize=(10, 7))
 plt.barh(gshap_df["feature"], gshap_df["g_shap_value"])
 plt.gca().invert_yaxis()

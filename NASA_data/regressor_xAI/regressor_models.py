@@ -5,7 +5,6 @@ import sys
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
-
 from sklearn.model_selection import train_test_split
 
 from xgboost import XGBRegressor
@@ -13,12 +12,7 @@ from lightgbm import LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 
-
 import random
-
-
-
-
 
 
 data_folder = "/kaggle/input/nasa-battery-dataset/cleaned_dataset"
@@ -51,7 +45,7 @@ def extract_features_from_file(file_path, battery_id, cycle_idx, total_cycles, m
     except: 
         v_jump = 0
 
-    # 2. 메타데이터 기반 지표 계산 (iloc 사용으로 인덱스 안전 확보)
+    # 2. 메타데이터 기반 지표 계산
     b_cap_max = meta_capacity.max()
     meta_cap_idx = meta_capacity.iloc[cycle_idx-1] 
 
@@ -80,7 +74,7 @@ def extract_features_from_file(file_path, battery_id, cycle_idx, total_cycles, m
         def get_slope(win_size):
             return (v_vals[idx] - v_vals[idx-win_size]) / (t_vals[idx] - t_vals[idx-win_size] + 1e-9)
 
-        # [들여쓰기 주의] row 딕셔너리 시작
+        # row 딕셔너리 시작
         row = {
             'battery_id': battery_id,
             'cycle_count': cycle_idx,
